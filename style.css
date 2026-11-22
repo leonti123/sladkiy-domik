@@ -489,3 +489,4 @@ footer .brandmark { background:#fff; }
 .trust li { align-items:flex-start; text-align:left; max-width:125px; }
 @media (max-width:760px) { .trust li { max-width:calc(50% - 13px); } }
 .no-photo span { font:13px 'Golos Text',sans-serif; color:var(--soft); }
+@media (max-width:560px) { .brand { font-size:15px; letter-spacing:.08em; gap:8px; } .brandmark { width:34px; height:34px; } .brandmark .icon { width:24px; height:24px; } .head { gap:10px; } }
