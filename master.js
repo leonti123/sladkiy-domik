@@ -26,7 +26,7 @@ texts.forEach(t => {
   const raw = e.textContent; TK.push({k: e.dataset.tk, el: e, o: norm(raw), pre: /^\s/.test(raw) ? " " : "", post: /\s$/.test(raw) ? " " : ""});
 });
 const HK = [];   // скрываемые блоки
-const HSEL = "main > section, body > section, .benefits > *, .trust > li, .steps > li, .rv-grid > *, .faq details, #bundle, .hero-art .back-photo, .price-seal, #delivery .wrap > *";
+const HSEL = "main > section, body > section, .acc-grid > *, .trust > li, .steps > li, .rv-grid > *, .faq details, #bundle, .hero-art .back-photo, .price-seal, .hero-note, .stamp, #delivery .wrap > *";
 document.querySelectorAll(HSEL).forEach((e, i) => { if (e.closest("header,dialog,form")) return; e.dataset.hk = "h" + i; HK.push({k: e.dataset.hk, el: e, o: norm(e.textContent).slice(0, 40)}); });
 const IK = [];
 document.querySelectorAll("img").forEach((e, i) => { if (e.closest(SKIP) || e.id === "preview-cake" || e.id === "preview-base") return; e.dataset.ik = "i" + i; IK.push({k: e.dataset.ik, el: e, o: e.getAttribute("src")}); });
