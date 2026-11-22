@@ -377,44 +377,6 @@ let galleryItems = [
     "category": "Детские и тематические"
   }
 ];
-const previewPhotos = [
-  [
-    "a457239212",
-    "a457239268",
-    "w275-457239527",
-    "a457239250"
-  ],
-  [
-    "a457239216",
-    "a457239248",
-    "a457239221",
-    "a457239269"
-  ],
-  [
-    "a457239219",
-    "a457239220",
-    "a457239261",
-    "m13353190-5"
-  ],
-  [
-    "a457239246",
-    "a457239256",
-    "a457239222",
-    "m13353190-3"
-  ]
-];
-const creamNames = [
-  "Розовый",
-  "Голубой",
-  "Молочный",
-  "Шоколадный"
-];
-const toppingNames = [
-  "Ягоды",
-  "Цветы",
-  "Шоколад и макаронс",
-  "Тематический декор"
-];
 let cakeTypes = [{"n": "Бисквитный", "r": 2800}, {"n": "Премиум начинка", "r": 3000}, {"n": "Медовик / Наполеон", "r": 2500}, {"n": "Молочная девочка / Ай-Берри / Кукис", "r": 2900}, {"n": "3D", "r": 3500}];
 const SITE0 = window.SITE_DATA && window.SITE_DATA.v === 1 ? window.SITE_DATA : null;
 window.APP_DEF = JSON.parse(JSON.stringify({cat: catalog, gal: galleryItems, types: cakeTypes}));
@@ -422,61 +384,9 @@ if (SITE0) { if (Array.isArray(SITE0.cat)) catalog = SITE0.cat; if (Array.isArra
 const LEAD_URL = "https://script.google.com/macros/s/AKfycby3_mdaCfx-Kv0MWD1RiwXnmTO47GtAS9zrH0WZsPcyeEGYHIRrXQjAU_EtMCfIypOW/exec";
 
 const byId = id => document.getElementById(id);
-const money = value => value.toLocaleString('ru-RU') + ' ₽';
 const photoPath = id => (window.PEND_PH && window.PEND_PH[id]) || (String(id).includes('/') ? id : 'img/' + id + '.webp');
 const form = byId('lead');
 const fields = form.elements;
-const guestRange = byId('party');
-const cakeType = byId('cake-type');
-const preview = byId('preview-cake');
-let photoRevision = 0;
-let chosenCake = null;
-
-function priceFor(guests, rate) {
-  const kg = Math.max(2, Math.round(guests * 0.175 * 2) / 2);
-  return {weight: kg.toLocaleString('ru-RU') + ' кг', cost: money(kg * rate)};
-}
-
-function currentCake() {
-  const cream = Number(document.querySelector('[name="cream"]:checked').value);
-  const topping = Number(document.querySelector('[name="topping"]:checked').value);
-  const guests = Number(guestRange.value);
-  const rate = Number(cakeType.value);
-  return {
-    cream: creamNames[cream], topping: toppingNames[topping],
-    photo: previewPhotos[cream][topping], guests, rate,
-    kind: (cakeTypes[cakeType.selectedIndex] || {}).n, ...priceFor(guests, rate)
-  };
-}
-
-async function showPreview(cake) {
-  const revision = ++photoRevision;
-  const src = photoPath(cake.photo);
-  if (preview.getAttribute('src') === src) return;
-  const next = new Image();
-  next.src = src;
-  try { await next.decode(); } catch { return; }
-  if (revision !== photoRevision) return;
-  const base = byId('preview-base');
-  base.src = preview.src;
-  preview.style.transition = 'none';
-  preview.style.opacity = '0';
-  preview.src = next.src;
-  preview.alt = 'Близкий пример оформления из работ Оксаны';
-  preview.getBoundingClientRect();
-  preview.style.transition = '';
-  preview.style.opacity = '1';
-}
-
-function refreshBuilder() {
-  const cake = currentCake();
-  byId('party-value').value = cake.guests;
-  byId('weight').textContent = cake.weight;
-  byId('cost').textContent = cake.cost;
-  showPreview(cake);
-}
-
-
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function renderCatalog() {
   const grid = document.querySelector('.product-grid');
@@ -496,34 +406,7 @@ function renderCatalog() {
   sel.replaceChildren(new Option('Выберите десерт', ''), ...catalog.filter(p => !p.hide).map(p => new Option(p.name)), new Option(last));
   sel.value = keep;
 }
-function renderTypes() {
-  const keep = cakeType.selectedIndex;
-  cakeType.replaceChildren(...cakeTypes.map(t => new Option(t.n + ' · ' + Number(t.r).toLocaleString('ru-RU') + ' ₽/кг', t.r)));
-  cakeType.selectedIndex = Math.min(Math.max(keep, 0), cakeTypes.length - 1);
-}
 renderCatalog();
-renderTypes();
-document.querySelector('.builder-options').addEventListener('input', refreshBuilder);
-refreshBuilder();
-
-function clearChoice() {
-  chosenCake = null;
-  fields.guests.required = false;
-  for (const key of ['cream', 'topping', 'kind', 'weight', 'cost']) fields[key].value = '';
-  byId('chosen').hidden = true;
-}
-
-function updateOrderSummary() {
-  if (!chosenCake) return;
-  const guests = fields.guests.valueAsNumber;
-  const amount = Number.isInteger(guests) && guests > 0 ? priceFor(guests, chosenCake.rate) : {weight:'', cost:''};
-  for (const key of ['cream','topping','kind']) fields[key].value = chosenCake[key];
-  fields.weight.value = amount.weight;
-  fields.cost.value = amount.cost;
-  byId('chosen').textContent = [chosenCake.kind, chosenCake.cream + ' крем', chosenCake.topping,
-    amount.weight, amount.cost].filter(Boolean).join(' · ');
-  byId('chosen').hidden = false;
-}
 
 function focusOrder() {
   byId('order').scrollIntoView({block:'start'});
@@ -531,22 +414,14 @@ function focusOrder() {
 }
 
 function startProductOrder(name) {
-  clearChoice();
+  allowNextOrder();
   fields.product.value = name;
   focusOrder();
 }
 
-byId('order-cake').addEventListener('click', () => {
-  chosenCake = currentCake();
-  fields.guests.required = true;
-  const productIndex = [0,0,1,1,2][cakeType.selectedIndex];
-  fields.product.value = (catalog[productIndex] || catalog[0] || {}).name || '';
-  fields.guests.value = chosenCake.guests;
-  updateOrderSummary();
-  focusOrder();
+document.querySelectorAll('[data-order-product]').forEach(button => {
+  button.addEventListener('click', () => startProductOrder(button.dataset.orderProduct));
 });
-fields.product.addEventListener('change', clearChoice);
-fields.guests.addEventListener('input', updateOrderSummary);
 byId('bundle').addEventListener('click', () => startProductOrder('Бенто + капкейки'));
 
 const dialog = byId('product-dialog');
@@ -576,6 +451,9 @@ function showSlide() {
 }
 
 function openProduct(button) {
+  dialog.classList.remove('document-view');
+  dialog.setAttribute('aria-labelledby', 'dialog-title');
+  dialog.removeAttribute('aria-label');
   activeProduct = catalog[Number(button.dataset.product)];
   slideIndex = 0;
   byId('dialog-title').textContent = activeProduct.name;
@@ -608,6 +486,19 @@ function openProduct(button) {
 document.querySelector('.product-grid').addEventListener('click', event => {
   const button = event.target.closest('[data-product]');
   if (button) openProduct(button);
+});
+document.querySelector('.docs').addEventListener('click', event => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  const image = button.querySelector('img').cloneNode();
+  image.removeAttribute('data-ik');
+  image.loading = 'eager';
+  media.replaceChildren(image);
+  dialog.classList.add('document-view');
+  dialog.removeAttribute('aria-labelledby');
+  dialog.setAttribute('aria-label', image.alt);
+  dialog.showModal();
+  dialog.scrollTop = 0;
 });
 document.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
 dialog.addEventListener('click', event => {
@@ -670,8 +561,6 @@ const err = byId('err');
 function leadPayload() {
   const parts = ['Макет sladkiy-domik', 'Десерт: ' + fields.product.value, 'Дата: ' + fields.date.value];
   if (fields.guests.value) parts.push('Гостей: ' + fields.guests.value);
-  if (chosenCake) parts.push('Цвет крема: ' + fields.cream.value, 'Шапка: ' + fields.topping.value,
-    'Тип: ' + fields.kind.value, 'Вес: ' + fields.weight.value, 'Цена: ' + fields.cost.value, 'Декор отдельно');
   return {site:location.hostname, name:fields.name.value.trim(), phone:fields.phone.value.trim(), details:parts.join(', '),
     comment:fields.comment.value.trim().replace(/\s*[\r\n]+\s*/g, ', '), website:fields.website.value};
 }
@@ -683,9 +572,6 @@ function allowNextOrder() {
   }
 }
 form.addEventListener('input', allowNextOrder);
-byId('order-cake').addEventListener('click', allowNextOrder);
-byId('bundle').addEventListener('click', allowNextOrder);
-byId('dialog-order').addEventListener('click', allowNextOrder);
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (submitButton.disabled || submitButton.hidden) return;
@@ -715,7 +601,7 @@ window.APP = {
   get catalog() { return catalog; }, set catalog(v) { catalog = v; },
   get gal() { return galleryItems; }, set gal(v) { galleryItems = v; },
   get types() { return cakeTypes; }, set types(v) { cakeTypes = v; },
-  render() { renderCatalog(); renderTypes(); renderGallery(); refreshBuilder(); }
+  render() { renderCatalog(); renderGallery(); }
 };
 
 const garlands = new IntersectionObserver(entries => {

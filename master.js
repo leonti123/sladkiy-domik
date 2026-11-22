@@ -11,7 +11,7 @@ const norm = s => String(s || "").replace(/\s+/g, " ").trim();
 const root = document.documentElement;
 
 /* ---------- исходное состояние страницы ---------- */
-const SKIP = "header,#mobile-nav,.mockup,.product-grid,#gallery,.filters,#more,#builder fieldset,#builder select,.range-ends,form,dialog,script,style,svg,a,output,.mbar,noscript,.price-seal small,#weight,#cost,#chosen,.m-enter";
+const SKIP = "header,#mobile-nav,.mockup,.product-grid,#gallery,.filters,#more,form,dialog,script,style,svg,a,output,.mbar,noscript,.price-seal small,.m-enter";
 const TK = [];   // [{k, el, o}]
 let n = 0;
 const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -29,13 +29,13 @@ const HK = [];   // скрываемые блоки
 const HSEL = "main > section, body > section, .acc-grid > *, .trust > li, .steps > li, .rv-grid > *, .faq details, #bundle, .hero-art .back-photo, .price-seal, .hero-note, .stamp, #delivery .wrap > *";
 document.querySelectorAll(HSEL).forEach((e, i) => { if (e.closest("header,dialog,form")) return; e.dataset.hk = "h" + i; HK.push({k: e.dataset.hk, el: e, o: norm(e.textContent).slice(0, 40)}); });
 const IK = [];
-document.querySelectorAll("img").forEach((e, i) => { if (e.closest(SKIP) || e.id === "preview-cake" || e.id === "preview-base") return; e.dataset.ik = "i" + i; IK.push({k: e.dataset.ik, el: e, o: e.getAttribute("src")}); });
-const LK0 = {tel: "+7 926 080-19-77", wa: "https://wa.me/79260801977", max: "https://max.ru/join/qPjPz2Lf94W5uS9xBawd1B8jcgIG_WG9RNajYIsjJFQ", vk: "https://vk.ru/instadesertiko", vkm: "https://vk.ru/im?sel=-223763661"};
+document.querySelectorAll("img").forEach((e, i) => { if (e.closest(SKIP)) return; e.dataset.ik = "i" + i; IK.push({k: e.dataset.ik, el: e, o: e.getAttribute("src")}); });
+const LK0 = {tel: "+7 915 097-19-44", wa: "https://wa.me/79150971944", max: "https://max.ru/u/f9LHodD0cOJsC0oTp6cP0GGXwq1kKxejM_gnBfEqGsMKxpt3eNJAthwU0ho", vkpersonal: "https://vk.ru/write754299219", maxch: "https://max.ru/join/qPjPz2Lf94W5uS9xBawd1B8jcgIG_WG9RNajYIsjJFQ", vk: "https://vk.ru/instadesertiko", vkm: "https://vk.ru/im?sel=-223763661"};
 const LKEL = [];
 document.querySelectorAll("a[href]").forEach(a => {
   const h = a.getAttribute("href");
   if (h.startsWith("tel:")) LKEL.push({a, k: "tel"});
-  else for (const k of ["wa", "max", "vkm", "vk"]) if (h === LK0[k]) { LKEL.push({a, k}); break; }
+  else for (const k of ["wa", "max", "maxch", "vkpersonal", "vkm", "vk"]) if (h === LK0[k]) { LKEL.push({a, k}); break; }
 });
 const telSpans = [...document.querySelectorAll("a[href^='tel:'] span, a[href^='tel:']")].filter(e => !e.children.length && norm(e.textContent) === LK0.tel);
 
@@ -116,7 +116,7 @@ document.head.appendChild(css);
 
 const bar = document.createElement("div");
 bar.className = "mbar";
-bar.innerHTML = `<b id="mInfo">Режим мастера</b><button type="button" data-me="cat">Каталог</button><button type="button" data-me="gal">Работы</button><button type="button" data-me="types">Цены торта</button><button type="button" data-me="lk">Контакты</button><button type="button" data-me="more">Ещё</button><button type="button" class="pri" id="mSave">Сохранить</button><button type="button" id="mExit">Выйти</button>`;
+bar.innerHTML = `<b id="mInfo">Режим мастера</b><button type="button" data-me="cat">Каталог</button><button type="button" data-me="gal">Работы</button><button type="button" data-me="lk">Контакты</button><button type="button" data-me="more">Ещё</button><button type="button" class="pri" id="mSave">Сохранить</button><button type="button" id="mExit">Выйти</button>`;
 document.body.appendChild(bar);
 const dlg = document.createElement("dialog");
 dlg.className = "mdlg";
@@ -214,10 +214,7 @@ const SCH = {
     f: [["name", "Название"], ["price", "Цена (например: от 2 800 ₽/кг)"], ["tag", "Метка на фото (Хит, Новинка), можно пусто"], ["description", "Описание", "area"], ["flavors", "Вкусы и начинки, каждый с новой строки", "lines"], ["photos", "Фото", "photos"], ["hide", "Скрыть", "check"]]},
   gal: {title: "Мои работы", hint: "Фото, подпись и раздел для фильтра. Первые 12 видны сразу, остальные по кнопке «Показать ещё».",
     add: () => ({id: "", title: "Новая работа", category: CATS[0]}),
-    f: [["id", "Фото", "photo"], ["title", "Подпись"], ["category", "Раздел", "sel"]]},
-  types: {title: "Цены в калькуляторе торта", hint: "Тип торта и цена за килограмм. Калькулятор считает вес по гостям и умножает на эту цену.",
-    add: () => ({n: "Новый тип", r: 3000}),
-    f: [["n", "Тип торта"], ["r", "Цена за кг, ₽", "num"]]}
+    f: [["id", "Фото", "photo"], ["title", "Подпись"], ["category", "Раздел", "sel"]]}
 };
 let ED = null;
 function openEditor(kind) {
@@ -260,13 +257,12 @@ function drawEditor(openIdx) {
   $("edOk").onclick = () => {
     let L = ED.list;
     if (ED.kind === "gal") L = L.filter(x => x.id);
-    if (ED.kind === "types" && !L.length) { toast("Нужен хотя бы один тип торта"); return; }
     D[ED.kind] = L; setDirty(); renderAll(); dlg.close();
   };
 }
 function lkDlg() {
   const L = Object.assign(clone(LK0), D.lk || {});
-  const F = [["tel", "Телефон"], ["wa", "Ссылка WhatsApp (https://wa.me/7...)"], ["max", "Ссылка на канал MAX"], ["vk", "Сообщество ВКонтакте"], ["vkm", "Ссылка «Написать в ВК»"]];
+  const F = [["tel", "Телефон"], ["wa", "Ссылка WhatsApp (https://wa.me/7...)"], ["max", "Личный MAX"], ["maxch", "Канал в MAX"], ["vkpersonal", "Личная страница для сообщений ВК"], ["vk", "Сообщество ВКонтакте"], ["vkm", "Ссылка «Написать в ВК»"]];
   $("mB").innerHTML = `<div class="me-h"><h3>Контакты</h3><p>Меняются сразу во всех кнопках сайта. Адрес и другие тексты правятся прямо на странице.</p></div><div class="me-b me-fl" id="fdB">${F.map(([k, lab]) => `<label><span>${lab}</span><input data-k="${k}" value="${esc(L[k])}"></label>`).join("")}</div><div class="me-f"><button type="button" class="mbtn gh" data-close>Отмена</button><button type="button" class="mbtn" id="fdOk">Готово</button></div>`;
   openDlg();
   $("fdOk").onclick = () => { const o = {}; $("fdB").querySelectorAll("[data-k]").forEach(i => o[i.dataset.k] = i.value.trim() || LK0[i.dataset.k]); D.lk = o; setDirty(); applyStatic(); dlg.close(); };
