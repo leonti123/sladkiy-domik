@@ -2,7 +2,7 @@
    Данные: data.js (window.SITE_DATA), сохранение через Apps Script в GitHub. */
 (function () {
 'use strict';
-const MASTER_URL = "";
+const MASTER_URL = "https://script.google.com/macros/s/AKfycbzFzWWsmMP49DMlycR49pNzL7HMWXaSLkSA1iAYV1hzxjdHsmVk2ocIR_N_am5DuGvE/exec";
 const LS_T = "sd-master", LS_D = "sd-draft", SS_OWN = "sd-own";
 const $ = id => document.getElementById(id);
 const clone = o => JSON.parse(JSON.stringify(o));
