@@ -11,14 +11,18 @@ const norm = s => String(s || "").replace(/\s+/g, " ").trim();
 const root = document.documentElement;
 
 /* ---------- исходное состояние страницы ---------- */
-const SKIP = "header,#mobile-nav,.mockup,.product-grid,#gallery,.filters,#more,form,dialog,script,style,svg,a,output,.mbar,noscript,.price-seal small,.m-enter";
+const SKIP = "header,.format-grid,.acc-grid,.rv-grid,.fill-tabs,.fill-grid,.fill-intro,#mobile-nav,.mockup,.product-grid,#gallery,.filters,#more,form,dialog,script,style,svg,a,output,.mbar,noscript,.price-seal small,.m-enter";
 const TK = [];   // [{k, el, o}]
+// Keep the original text keys across sections moved into list editors.
+const seenStarts = new Set();
 let n = 0;
 const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
 const texts = [];
 while (walker.nextNode()) { const t = walker.currentNode; if (norm(t.nodeValue) && t.parentElement && !t.parentElement.closest(SKIP)) texts.push(t); }
 texts.forEach(t => {
   const p = t.parentElement;
+  const start = p.closest("[data-text-start]");
+  if (start && !seenStarts.has(start)) { n = Number(start.dataset.textStart); seenStarts.add(start); }
   let e = p;
   if (p.childNodes.length !== 1) { e = document.createElement("span"); p.insertBefore(e, t); e.appendChild(t); }
   if (e.dataset.tk) return;
@@ -26,10 +30,11 @@ texts.forEach(t => {
   const raw = e.textContent; TK.push({k: e.dataset.tk, el: e, o: norm(raw), pre: /^\s/.test(raw) ? " " : "", post: /\s$/.test(raw) ? " " : ""});
 });
 const HK = [];   // скрываемые блоки
-const HSEL = "main > section, body > section, .acc-grid > *, .trust > li, .steps > li, .rv-grid > *, .faq details, #bundle, .hero-art .back-photo, .price-seal, .hero-note, .stamp, #delivery .wrap > *";
-document.querySelectorAll(HSEL).forEach((e, i) => { if (e.closest("header,dialog,form")) return; e.dataset.hk = "h" + i; HK.push({k: e.dataset.hk, el: e, o: norm(e.textContent).slice(0, 40)}); });
+const HSEL = "main > section, body > section, .trust > li, .steps > li, .faq details, #bundle, .hero-art .back-photo, .price-seal, .hero-note, .stamp, #delivery .wrap > *";
+let hideIndex = 0;
+document.querySelectorAll(HSEL).forEach(e => { if (e.closest("header,dialog,form")) return; if (e.dataset.hideStart) hideIndex = Number(e.dataset.hideStart); e.dataset.hk = "h" + hideIndex++; HK.push({k: e.dataset.hk, el: e, o: norm(e.textContent).slice(0, 40)}); });
 const IK = [];
-document.querySelectorAll("img").forEach((e, i) => { if (e.closest(SKIP)) return; e.dataset.ik = "i" + i; IK.push({k: e.dataset.ik, el: e, o: e.getAttribute("src")}); });
+document.querySelectorAll("img").forEach((e, i) => { if (e.closest(SKIP)) return; e.dataset.ik = e.dataset.imageKey || "i" + i; IK.push({k: e.dataset.ik, el: e, o: e.getAttribute("src")}); });
 const LK0 = {tel: "+7 915 097-19-44", wa: "https://wa.me/79150971944", max: "https://max.ru/u/f9LHodD0cOJsC0oTp6cP0GGXwq1kKxejM_gnBfEqGsMKxpt3eNJAthwU0ho", vkpersonal: "https://vk.ru/write754299219", maxch: "https://max.ru/join/qPjPz2Lf94W5uS9xBawd1B8jcgIG_WG9RNajYIsjJFQ", vk: "https://vk.ru/instadesertiko", vkm: "https://vk.ru/im?sel=-223763661"};
 const LKEL = [];
 document.querySelectorAll("a[href]").forEach(a => {
@@ -41,9 +46,20 @@ const telSpans = [...document.querySelectorAll("a[href^='tel:'] span, a[href^='t
 
 const DEF = Object.assign(clone(window.APP_DEF || {}), {v: 1, tx: {}, hide: {}, im: {}, lk: clone(LK0)});
 const SD = window.SITE_DATA && window.SITE_DATA.v === 1 ? window.SITE_DATA : null;
-let D = Object.assign(clone(DEF), SD ? clone(SD) : {});
-let REV = SD ? +(SD.rev || 0) : 0;
-try { const own = JSON.parse(sessionStorage.getItem(SS_OWN) || "null"); if (own && own.rev > REV) { D = Object.assign(clone(DEF), own); REV = own.rev; } } catch (e) {}
+function restore(source = {}) {
+  const state = Object.assign(clone(DEF), clone(source), clone(window.APP.readSections(source)));
+  delete state.reviews;
+  return state;
+}
+function revision(source) {
+  return Number(Array.isArray(source.rev) ? source.revision : source.rev) || 0;
+}
+let D = restore(SD || {});
+let REV = revision(SD || {});
+try {
+  const own = JSON.parse(sessionStorage.getItem(SS_OWN) || "null");
+  if (own && revision(own) > REV) { D = restore(own); REV = revision(own); }
+} catch (e) {}
 const PEND = window.PEND_PH = {};
 const SRC = p => PEND[p] || (String(p).includes("/") ? p : "img/" + p + ".webp");
 
@@ -59,7 +75,7 @@ function applyStatic() {
 }
 function renderAll() {
   const A = window.APP;
-  if (A) { A.catalog = D.cat; A.gal = D.gal; A.types = D.types; A.render(); }
+  if (A) { A.catalog = D.cat; A.gal = D.gal; A.types = D.types; A.sections = D; A.render(); }
   applyStatic();
 }
 if (SD || REV) renderAll(); else applyStatic();
@@ -116,7 +132,7 @@ document.head.appendChild(css);
 
 const bar = document.createElement("div");
 bar.className = "mbar";
-bar.innerHTML = `<b id="mInfo">Режим мастера</b><button type="button" data-me="cat">Каталог</button><button type="button" data-me="gal">Работы</button><button type="button" data-me="lk">Контакты</button><button type="button" data-me="more">Ещё</button><button type="button" class="pri" id="mSave">Сохранить</button><button type="button" id="mExit">Выйти</button>`;
+bar.innerHTML = `<b id="mInfo">Режим мастера</b><button type="button" data-me="cat">Каталог</button><button type="button" data-me="gal">Работы</button><button type="button" data-me="fill">Начинки</button><button type="button" data-me="fmt">Форматы</button><button type="button" data-me="acc">Обещания</button><button type="button" data-me="rev">Отзывы</button><button type="button" data-me="lk">Контакты</button><button type="button" data-me="more">Ещё</button><button type="button" class="pri" id="mSave">Сохранить</button><button type="button" id="mExit">Выйти</button>`;
 document.body.appendChild(bar);
 const dlg = document.createElement("dialog");
 dlg.className = "mdlg";
@@ -138,7 +154,7 @@ function setDirty() { dirty++; $("mInfo").textContent = "Есть несохра
 function openDlg() { if (!dlg.open) dlg.showModal(); dlg.scrollTop = 0; }
 function enter(t) {
   M = t; try { localStorage.setItem(LS_T, JSON.stringify(t)); } catch (e) {}
-  try { const dr = JSON.parse(localStorage.getItem(LS_D) || "null"); if (dr && dr.d && window.confirm("Есть несохранённые правки с прошлого раза. Продолжить с ними?")) { D = dr.d; Object.assign(PEND, dr.pend || {}); dirty = 1; renderAll(); } } catch (e) {}
+  try { const dr = JSON.parse(localStorage.getItem(LS_D) || "null"); if (dr && dr.d && window.confirm("Есть несохранённые правки с прошлого раза. Продолжить с ними?")) { D = restore(dr.d); Object.assign(PEND, dr.pend || {}); dirty = 1; renderAll(); } } catch (e) {}
   root.classList.add("ms-on");
   TK.forEach(({el}) => { try { el.contentEditable = "plaintext-only"; } catch (x) {} if (el.contentEditable !== "plaintext-only") el.contentEditable = "true"; });
   hideLabels();
@@ -208,7 +224,20 @@ function shrink(file, max) {
 
 /* редакторы списков */
 const CATS = ["Торты с ягодами", "Детские и тематические", "Пирожные и капкейки", "Наборы"];
+const hideField = ["hide", "Скрыть", "check"];
 const SCH = {
+  fill: {title: "Начинки в разрезе", hint: "Выберите вид десерта. Для начинки без фотографии появится рисунок среза.",
+    add: () => ({tab: "Торты", name: "Новая начинка", description: "", photo: "", hide: false}),
+    f: [["tab", "Вкладка", "sel", () => Object.keys(DEF.fillIntro)], ["name", "Название"], ["description", "Описание", "area"], ["photo", "Фото разреза", "photo"], hideField]},
+  fmt: {title: "Форматы и цены", hint: "Выберите товар для заявки или оставьте переход в каталог.",
+    add: () => ({name: "Новый формат", button: "Выбрать в каталоге", product: ""}),
+    f: [["photo", "Фото", "photo"], ["tag", "Метка на фото"], ["name", "Название"], ["badge1", "Первая плашка"], ["badge2", "Вторая плашка"], ["description", "Описание", "area"], ["price", "Цена"], ["note", "Подпись под ценой"], ["button", "Текст кнопки"], ["product", "Товар для заявки", "sel", () => ["", ...D.cat.map(p => p.name)]], hideField]},
+  acc: {title: "Четыре сладких обещания", hint: "Номера появятся в порядке показа.",
+    add: () => ({name: "Новое обещание", text: ""}),
+    f: [["name", "Заголовок"], ["text", "Текст", "area"], hideField]},
+  rev: {title: "Отзывы", hint: "К отзыву можно добавить фотографию.",
+    add: () => ({name: "", text: "", date: "", photo: ""}),
+    f: [["text", "Текст отзыва", "area"], ["name", "Имя"], ["date", "Дата или подпись"], ["photo", "Фото", "photo"], hideField]},
   cat: {title: "Каталог", hint: "Названия, цены, описания, вкусы и фото карточек. Первое фото стоит на карточке. Скрытые карточки не видны покупателям.",
     add: () => ({name: "Новый десерт", price: "", tag: "", description: "", flavors: [], photos: []}),
     f: [["name", "Название"], ["price", "Цена (например: от 2 800 ₽/кг)"], ["tag", "Метка на фото (Хит, Новинка), можно пусто"], ["description", "Описание", "area"], ["flavors", "Вкусы и начинки, каждый с новой строки", "lines"], ["photos", "Фото", "photos"], ["hide", "Скрыть", "check"]]},
@@ -221,24 +250,41 @@ function openEditor(kind) {
   if (kind === "more") return moreDlg();
   if (kind === "lk") return lkDlg();
   ED = {kind, sc: SCH[kind], list: clone(D[kind])};
+  if (kind === "fill") ED.intro = clone(D.fillIntro);
   drawEditor(); openDlg();
 }
 function drawEditor(openIdx) {
   const {sc, list} = ED;
   const rows = list.map((it, i) => {
-    const th = ED.kind === "cat" ? (it.photos || [])[0] : ED.kind === "gal" ? it.id : null;
+    const th = ED.kind === "cat" ? (it.photos || [])[0] : ED.kind === "gal" ? it.id : it.photo;
     const name = it.name || it.title || it.n || "(без названия)";
-    const fields = sc.f.map(([k, lab, ty]) => {
+    const fields = sc.f.map(([k, lab, ty, options]) => {
       if (ty === "photos" || ty === "photo") { const ph = ty === "photos" ? (it[k] || []) : (it[k] ? [it[k]] : []); return `<div><span style="display:block;font-size:13px;color:#6b5a66;margin-bottom:4px">${lab}</span><div class="me-ph">${ph.map((p, j) => `<figure><img src="${esc(SRC(p))}" alt=""><button type="button" data-delph="${j}" data-k="${k}" aria-label="Убрать фото">×</button></figure>`).join("")}${ty === "photos" || !ph.length ? `<button type="button" class="add" data-addph="${k}" data-multi="${ty === "photos" ? 1 : ""}" aria-label="Добавить фото">+</button>` : ""}</div></div>`; }
       if (ty === "check") return `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-k="${k}" style="width:20px;min-height:20px" ${it[k] ? "checked" : ""}> ${lab}</label>`;
       if (ty === "area") return `<label><span>${lab}</span><textarea data-k="${k}">${esc(it[k])}</textarea></label>`;
       if (ty === "lines") return `<label><span>${lab}</span><textarea data-k="${k}" data-lines="1">${esc((it[k] || []).join("\n"))}</textarea></label>`;
-      if (ty === "sel") return `<label><span>${lab}</span><select data-k="${k}">${CATS.map(c => `<option${c === it[k] ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>`;
+      if (ty === "sel") return `<label><span>${lab}</span><select data-k="${k}">${(options ? options() : CATS).map(c => `<option value="${esc(c)}"${c === it[k] ? " selected" : ""}>${esc(c || "Перейти в каталог")}</option>`).join("")}</select></label>`;
       return `<label><span>${lab}</span><input data-k="${k}" value="${esc(it[k])}"${ty === "num" ? ' inputmode="numeric" data-num="1"' : ""}></label>`;
     }).join("");
     return `<details class="me-row${it.hide ? " off" : ""}" data-i="${i}"${openIdx === i ? " open" : ""}><summary>${th ? `<img src="${esc(SRC(th))}" alt="">` : ""}<span class="t">${esc(name)}</span><span class="ops"><button type="button" data-mv="-1" aria-label="Выше">↑</button><button type="button" data-mv="1" aria-label="Ниже">↓</button><button type="button" data-del aria-label="Удалить">✕</button></span></summary><div class="me-fl">${fields}</div></details>`;
   }).join("");
   $("mB").innerHTML = `<div class="me-h"><h3>${sc.title}</h3><p>${sc.hint}</p></div><div class="me-b" id="edB">${rows}<button type="button" class="mbtn gh" id="edAdd">Добавить</button></div><div class="me-f"><button type="button" class="mbtn gh" data-close>Отмена</button><button type="button" class="mbtn" id="edOk">Готово</button></div>`;
+  if (ED.intro) {
+    const notes = document.createElement("details");
+    notes.className = "me-row";
+    notes.innerHTML = '<summary>Вводный текст под вкладками</summary><div class="me-fl"></div>';
+    const fields = notes.querySelector(".me-fl");
+    for (const tab of Object.keys(DEF.fillIntro)) {
+      const label = document.createElement("label");
+      label.textContent = tab;
+      const input = document.createElement("textarea");
+      input.value = ED.intro[tab] || "";
+      input.oninput = () => { ED.intro[tab] = input.value; };
+      label.append(input);
+      fields.append(label);
+    }
+    $("edB").prepend(notes);
+  }
   const B = $("edB");
   B.oninput = B.onchange = e => {
     const r = e.target.closest(".me-row"), k = e.target.dataset.k; if (!r || !k) return;
@@ -257,6 +303,7 @@ function drawEditor(openIdx) {
   $("edOk").onclick = () => {
     let L = ED.list;
     if (ED.kind === "gal") L = L.filter(x => x.id);
+    if (ED.intro) D.fillIntro = ED.intro;
     D[ED.kind] = L; setDirty(); renderAll(); dlg.close();
   };
 }
@@ -279,12 +326,12 @@ $("mSave").onclick = async () => {
   const used = new Set(JSON.stringify(D).match(/img\/u\/[a-z0-9]+\.jpg/g) || []);
   const files = Object.keys(PEND).filter(p => used.has(p)).map(p => ({path: p, b64: PEND[p].split(",")[1]}));
   const b = $("mSave"); b.disabled = true; b.textContent = "Сохраняем...";
-  const send = force => api({a: "save", token: M.token, base: REV, force: !!force, data: Object.assign({}, D, {v: 1}), files});
+  const send = force => api({a: "save", token: M.token, base: REV, force: !!force, data: Object.assign({}, D, {v: 1, reviews: D.rev, rev: REV, revision: REV}), files});
   try {
     let r = await send(false);
     if (!r.ok && r.err === "conflict" && window.confirm("Сайт уже меняли с другого устройства. Сохранить ваши правки поверх?")) r = await send(true);
     if (r.ok) {
-      REV = r.rev; D.rev = r.rev; dirty = 0;
+      REV = r.rev; D.revision = REV; dirty = 0;
       try { sessionStorage.setItem(SS_OWN, JSON.stringify(D)); localStorage.removeItem(LS_D); } catch (e) {}
       $("mInfo").textContent = "Сохранено"; toast("Сохранено. На сайте появится в течение 1-2 минут.", 5000);
     } else toast(r.err === "auth" ? "Вход устарел, войдите снова" : r.err === "too_big" ? "Слишком много фото за раз, сохраните частями" : "Не сохранилось: " + (r.err || "ошибка"), 6000);

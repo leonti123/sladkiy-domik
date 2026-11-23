@@ -378,8 +378,72 @@ let galleryItems = [
   }
 ];
 let cakeTypes = [{"n": "Бисквитный", "r": 2800}, {"n": "Премиум начинка", "r": 3000}, {"n": "Медовик / Наполеон", "r": 2500}, {"n": "Молочная девочка / Ай-Берри / Кукис", "r": 2900}, {"n": "3D", "r": 3500}];
+const sectionDefaults = {
+  fmt: [
+    {"photo":"a457239216","tag":"от 2 кг","name":"Торт","badge1":"150–200 г на гостя","badge2":"15+ начинок","description":"На юбилей или день рождения. Подберу декор под ваш повод: ягоды, цветы или любимую надпись.","price":"от 2 500 ₽","note":"за кг · премиум начинки 3 000 ₽/кг","button":"Заказать торт","product":"Бисквитные торты","hide":false},
+    {"photo":"a457239238","tag":"фигурный","name":"Торт 3D","badge1":"детские праздники","badge2":"тематический декор","description":"Торт в форме любимой игрушки или героя. Вместе выберем образ и обсудим детали.","price":"3 500 ₽","note":"за кг","button":"Заказать 3D","product":"Торты 3D","hide":false},
+    {"photo":"m13353145-1","tag":"на 1–2 человек","name":"Муссовый бенто","badge1":"нежный мусс","badge2":"8 вкусов","description":"Небольшой торт для личного поздравления. Внутри может быть клубничный пломбир, карамельный латте или вишня в шоколаде.","price":"2 500 ₽","note":"за штуку","button":"Заказать бенто","product":"Муссовые бенто","hide":false},
+    {"photo":"m13353085-1","tag":"наборы","name":"Капкейки и пирожные","badge1":"капкейки, картошка, сырки","badge2":"порционные десерты","description":"Соберу набор для сладкого стола. Каждый гость сможет выбрать свой десерт.","price":"от 400 ₽","note":"за штуку","button":"Выбрать в каталоге","product":"","hide":false}
+  ],
+  acc: [
+    {"name":"Диплом кондитера","text":"Кондитер-декоратор 5 разряда, регулярно учусь у ведущих мастеров.","hide":false},
+    {"name":"Много начинок","text":"Медовик, Наполеон, Молочная девочка, Ай-Берри, Кукис и муссовые бенто.","hide":false},
+    {"name":"Точный вес","text":"Помогу рассчитать торт на гостей: ориентир 150–200 г на человека, минимум 2 кг.","hide":false},
+    {"name":"Довезёте целым","text":"Подскажу, как перевезти торт и аккуратно нарезать его для гостей.","hide":false}
+  ],
+  rev: [
+    {"text":"Очень вкусные печенья, даже сфотографировать не успели❤","name":"Наталья Вирясова","date":"2024-12-01","photo":"","hide":false},
+    {"text":"Очень вкусный, нежный  тортик, именниник остался в восторге. Спасибо большое","name":"Наталья Тюняева","date":"2025-08-03","photo":"","hide":false},
+    {"text":"Этот торт стал настоящим украшением нашего семейного праздника! Как же красиво оформлена надпись — «МАМА» смотрится очень трогательно. А вкус… просто сказка! Вся семья в восторге, даже самые привередливые сладкоежки не смогли оторваться. Спасибо за такой душевный подарок для нашей мамы!","name":"Татьяна Чистякова","date":"2025-11-30","photo":"","hide":false},
+    {"text":"Спасибо за такую красоту. Невероятно вкусно. Все гости в восторге. В очередной раз Оксана все были поражены этим произведением искусств с невероятным вкусом🍾🍾🍾🥰🥰🥰🥰Буду заказывать еще.","name":"Елена Кривенцева","date":"2026-02-07","photo":"","hide":false},
+    {"text":"заказывала тортик на др дочки. начинка Ферреро: очень шоколадная, много фундука. очень вкусный крем! покрытие - шоколадный ганаш. все ооочень и оочень вкусно. это стоит заказывать! потому что мы достойны лучшего!","name":"Ирина Маклакова","date":"09.02.2026","photo":"","hide":false},
+    {"text":"Этот торт стал настоящим украшением нашего семейного праздника! А вкус… просто сказка! Вся семья в восторге. Спасибо за такой душевный подарок для нашей мамы!","name":"Татьяна Чистякова","date":"30.11.2025","photo":"","hide":false}
+  ],
+  fill: [
+    {"tab":"Торты","name":"Ягодные","description":"","photo":"m13353316-5","hide":false},
+    {"tab":"Торты","name":"Карамельные","description":"","photo":"","hide":false},
+    {"tab":"Торты","name":"Кофейные","description":"","photo":"","hide":false},
+    {"tab":"Торты","name":"Йогуртово-ягодный с профитролями","description":"","photo":"w33-457239095","hide":false},
+    {"tab":"Торты","name":"Клубничный пломбир","description":"Клубничный бисквит, чизкейк, пломбирный крем и клубничное компоте.","photo":"","hide":false},
+    {"tab":"Торты","name":"Шоколад-вишня","description":"Шоколадный бисквит, крем-чиз, вишнёвый конфитюр и тёмный ганаш.","photo":"","hide":false},
+    {"tab":"Многослойные","name":"Медовик","description":"Медовые коржи с заварным кремом.","photo":"","hide":false},
+    {"tab":"Многослойные","name":"Наполеон","description":"Тонкие хрупкие коржи с заварным кремом.","photo":"","hide":false},
+    {"tab":"Многослойные","name":"Молочная девочка","description":"","photo":"","hide":false},
+    {"tab":"Многослойные","name":"Ай-Берри","description":"Йогуртовые коржи, сливочно-творожный крем и клубничное конфи.","photo":"","hide":false},
+    {"tab":"Многослойные","name":"Кукис с карамелью","description":"","photo":"","hide":false},
+    {"tab":"Многослойные","name":"Кукис ягодный","description":"","photo":"","hide":false},
+    {"tab":"Бенто","name":"Вишня в шоколаде","description":"Вишнёвая кислинка и насыщенный вкус шоколада.","photo":"","hide":false},
+    {"tab":"Бенто","name":"Молочный ломтик","description":"Мягкий сливочный вкус.","photo":"","hide":false},
+    {"tab":"Бенто","name":"Клубничный пломбир","description":"Клубничный вкус с пломбирной нотой.","photo":"","hide":false},
+    {"tab":"Бенто","name":"Смородина с ванилью","description":"Ягодная кислинка на нежной ванильной основе.","photo":"","hide":false},
+    {"tab":"Бенто","name":"Карамельный латте","description":"","photo":"","hide":false},
+    {"tab":"Бенто","name":"Орео капучино","description":"","photo":"","hide":false},
+    {"tab":"Бенто","name":"Рафаэлло","description":"","photo":"","hide":false},
+    {"tab":"Бенто","name":"Пина колада","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Сникерс","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Шоколадный пломбир","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Ферреро","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Тирамису","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Киндер кантри","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Рафаэлло","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Мак с лимоном","description":"","photo":"","hide":false},
+    {"tab":"Картошка","name":"Вишня","description":"","photo":"","hide":false},
+    {"tab":"Капкейки","name":"Ягодные","description":"","photo":"","hide":false},
+    {"tab":"Капкейки","name":"Шоколадные","description":"","photo":"","hide":false},
+    {"tab":"Капкейки","name":"Морковные","description":"Можно выбрать начинку с апельсиновой карамелью.","photo":"","hide":false},
+    {"tab":"Капкейки","name":"Карамельные","description":"","photo":"","hide":false},
+    {"tab":"Капкейки","name":"Премиум начинки","description":"","photo":"","hide":false}
+  ],
+  fillIntro: {
+    "Торты": "Бисквитные торты от 2 800 ₽/кг. Можно выбрать ягодную, карамельную или кофейную начинку.",
+    "Многослойные": "От 2 500 ₽/кг. Для Наполеона можно выбрать заварной или карамельный крем, добавить ягодную пропитку.",
+    "Бенто": "2 500 ₽ за мини-торт. Выберите вкус муссовой начинки.",
+    "Картошка": "400 ₽ за пирожное. Для набора можно выбрать разные начинки.",
+    "Капкейки": "От 400 ₽ за штуку. Подберём начинку для вашего набора."
+}
+};
 const SITE0 = window.SITE_DATA && window.SITE_DATA.v === 1 ? window.SITE_DATA : null;
-window.APP_DEF = JSON.parse(JSON.stringify({cat: catalog, gal: galleryItems, types: cakeTypes}));
+window.APP_DEF = JSON.parse(JSON.stringify({cat: catalog, gal: galleryItems, types: cakeTypes, ...sectionDefaults}));
 if (SITE0) { if (Array.isArray(SITE0.cat)) catalog = SITE0.cat; if (Array.isArray(SITE0.gal)) galleryItems = SITE0.gal; if (Array.isArray(SITE0.types) && SITE0.types.length) cakeTypes = SITE0.types; }
 const LEAD_URL = "https://script.google.com/macros/s/AKfycby3_mdaCfx-Kv0MWD1RiwXnmTO47GtAS9zrH0WZsPcyeEGYHIRrXQjAU_EtMCfIypOW/exec";
 
@@ -419,9 +483,125 @@ function startProductOrder(name) {
   focusOrder();
 }
 
-document.querySelectorAll('[data-order-product]').forEach(button => {
-  button.addEventListener('click', () => startProductOrder(button.dataset.orderProduct));
-});
+const fillTabs = Object.keys(sectionDefaults.fillIntro);
+let activeFill = fillTabs[0];
+
+// Older files use rev for the Apps Script revision. Saved files keep reviews
+// under reviews when the server stamps that numeric rev.
+function readSections(source = {}) {
+  const result = {};
+  for (const [key, defaults] of Object.entries(sectionDefaults)) {
+    if (key === 'fillIntro') result[key] = {...defaults, ...source.fillIntro};
+    else {
+      const rows = key === 'rev' && !Array.isArray(source.rev) ? source.reviews : source[key];
+      result[key] = Array.isArray(rows) ? rows : defaults;
+    }
+  }
+  // Carry edits from the former inline controls into list rows on first load.
+  function transfer(kind, firstText, fields, firstHide, firstImage) {
+    if (Array.isArray(source[kind]) || (kind === 'rev' && Array.isArray(source.reviews))) return;
+    result[kind] = result[kind].map((row, i) => {
+      const item = {...row};
+      fields.forEach((field, j) => {
+        const edit = (source.tx || {})['t' + (firstText + i * fields.length + j)];
+        if (field && edit && edit.o === String(row[field]).replace(/\s+/g, ' ').trim()) item[field] = edit.v;
+      });
+      if (firstHide != null && (source.hide || {})['h' + (firstHide + i)]) item.hide = true;
+      if (firstImage != null) {
+        const edit = (source.im || {})['i' + (firstImage + i)];
+        if (edit && edit.o === 'img/' + row.photo + '.webp') item.photo = edit.v;
+      }
+      return item;
+    });
+  }
+  transfer('fmt', 35, ['tag', 'name', 'badge1', 'badge2', 'description', 'price', 'note', 'button'], null, 2);
+  transfer('acc', 19, [null, 'name', 'text'], 10, null);
+  transfer('rev', 136, ['text', 'name', 'date'], 26, null);
+  return result;
+}
+let sections = readSections(SITE0 || {});
+
+function sectionPhoto(photo, alt) {
+  const image = el('img');
+  image.src = photoPath(photo);
+  image.alt = alt;
+  image.loading = 'lazy';
+  return image;
+}
+
+function fillingPanel() {
+  const rows = sections.fill.filter(item => !item.hide && item.tab === activeFill);
+  document.querySelector('.fill-intro').textContent = rows.length ? sections.fillIntro[activeFill] || '' : '';
+  document.querySelector('.fill-grid').replaceChildren(...rows.map(item => {
+    const card = el('article', 'fill-card');
+    const visual = el('div', 'fill-visual');
+    if (item.photo) visual.append(sectionPhoto(item.photo, item.name + ' в разрезе'));
+    else visual.append(el('span', 'layer-slice'));
+    card.append(visual, el('h3', '', item.name));
+    if (item.description) card.append(el('p', '', item.description));
+    return card;
+  }));
+}
+function renderFillings() {
+  const tabs = fillTabs.filter(tab => sections.fill.some(item => !item.hide && item.tab === tab));
+  if (!tabs.includes(activeFill)) activeFill = tabs[0];
+  const group = document.querySelector('.fill-tabs');
+  group.replaceChildren(...tabs.map(tab => {
+    const button = el('button', '', tab);
+    button.type = 'button';
+    button.setAttribute('aria-pressed', String(tab === activeFill));
+    button.onclick = () => {
+      activeFill = tab;
+      for (const sibling of group.children) sibling.setAttribute('aria-pressed', String(sibling === button));
+      fillingPanel();
+    };
+    return button;
+  }));
+  fillingPanel();
+}
+
+function formatCard(item) {
+  const card = el('article', 'format-card');
+  const photo = el('div', 'format-photo');
+  if (item.photo) photo.append(sectionPhoto(item.photo, item.name));
+  if (item.tag) photo.append(el('span', 'tag', item.tag));
+  const body = el('div', 'format-body');
+  const badges = el('div', 'format-meta');
+  for (const badge of [item.badge1, item.badge2]) if (badge) badges.append(el('span', '', badge));
+  const price = el('div', 'format-price');
+  price.append(el('strong', '', item.price), el('small', '', item.note));
+  body.append(el('h3', '', item.name), badges, el('p', '', item.description), price);
+  if (item.button) {
+    const orderable = catalog.some(p => !p.hide && p.name === item.product);
+    const button = el(orderable ? 'button' : 'a', 'btn', item.button);
+    if (orderable) {
+      button.type = 'button';
+      button.onclick = () => startProductOrder(item.product);
+    } else button.href = '#catalog';
+    body.append(button);
+  }
+  card.append(photo, body);
+  return card;
+}
+function renderSections() {
+  renderFillings();
+  document.querySelector('.format-grid').replaceChildren(...sections.fmt.filter(item => !item.hide).map(formatCard));
+  document.querySelector('.acc-grid').replaceChildren(...sections.acc.filter(item => !item.hide).map((item, i) => {
+    const card = el('div', 'acc');
+    card.append(el('em', '', String(i + 1).padStart(2, '0')), el('h3', '', item.name), el('p', '', item.text));
+    return card;
+  }));
+  document.querySelector('.rv-grid').replaceChildren(...sections.rev.filter(item => !item.hide).map(item => {
+    const card = el('figure', 'review');
+    if (item.photo) card.append(sectionPhoto(item.photo, 'Фото к отзыву'));
+    else card.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-berry"/></svg>';
+    const caption = el('figcaption');
+    caption.append(el('b', '', item.name), el('span', '', item.date));
+    card.append(el('blockquote', '', item.text), caption);
+    return card;
+  }));
+}
+renderSections();
 byId('bundle').addEventListener('click', () => startProductOrder('Бенто + капкейки'));
 
 const dialog = byId('product-dialog');
@@ -601,7 +781,9 @@ window.APP = {
   get catalog() { return catalog; }, set catalog(v) { catalog = v; },
   get gal() { return galleryItems; }, set gal(v) { galleryItems = v; },
   get types() { return cakeTypes; }, set types(v) { cakeTypes = v; },
-  render() { renderCatalog(); renderGallery(); }
+  readSections,
+  set sections(data) { sections = readSections(data); },
+  render() { renderCatalog(); renderGallery(); renderSections(); }
 };
 
 const garlands = new IntersectionObserver(entries => {
