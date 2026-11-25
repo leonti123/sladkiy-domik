@@ -774,6 +774,7 @@ form.addEventListener('submit', async event => {
   submitButton.innerHTML = label;
   submitButton.hidden = ok;
   byId('sent').hidden = !ok;
+  if (ok && window.goal) goal('lead');
   byId('fallback').hidden = ok;
 });
 
