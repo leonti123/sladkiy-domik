@@ -445,7 +445,7 @@ const sectionDefaults = {
 const SITE0 = window.SITE_DATA && window.SITE_DATA.v === 1 ? window.SITE_DATA : null;
 window.APP_DEF = JSON.parse(JSON.stringify({cat: catalog, gal: galleryItems, types: cakeTypes, ...sectionDefaults}));
 if (SITE0) { if (Array.isArray(SITE0.cat)) catalog = SITE0.cat; if (Array.isArray(SITE0.gal)) galleryItems = SITE0.gal; if (Array.isArray(SITE0.types) && SITE0.types.length) cakeTypes = SITE0.types; }
-const LEAD_URL = "https://script.google.com/macros/s/AKfycby3_mdaCfx-Kv0MWD1RiwXnmTO47GtAS9zrH0WZsPcyeEGYHIRrXQjAU_EtMCfIypOW/exec";
+const LEAD_URL = "https://script.google.com/macros/s/AKfycbyt0lKRIstW2zj1xhCI0T60f2pmQiF0T-S82jzZE_dPqUa8XVcY-L2NRk0ZZO7ouRHz/exec";
 
 const byId = id => document.getElementById(id);
 const photoPath = id => (window.PEND_PH && window.PEND_PH[id]) || (String(id).includes('/') ? id : 'img/' + id + '.webp');
