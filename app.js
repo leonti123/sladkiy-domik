@@ -739,7 +739,7 @@ fields.date.min = [today.getFullYear(), String(today.getMonth()+1).padStart(2,'0
 const submitButton = byId('submit');
 const err = byId('err');
 function leadPayload() {
-  const parts = ['Макет sladkiy-domik', 'Десерт: ' + fields.product.value, 'Дата: ' + fields.date.value];
+  const parts = ['Сайт torty-yasenevo.ru', 'Десерт: ' + fields.product.value, 'Дата: ' + fields.date.value];
   if (fields.guests.value) parts.push('Гостей: ' + fields.guests.value);
   return {site:location.hostname, name:fields.name.value.trim(), phone:fields.phone.value.trim(), details:parts.join(', '),
     comment:fields.comment.value.trim().replace(/\s*[\r\n]+\s*/g, ', '), website:fields.website.value};
